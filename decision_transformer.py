@@ -470,7 +470,7 @@ for _ in range(100*max_step):
         if step == 0:
             observations = [torch.from_numpy(observation).float().to(device) for _ in range(batch_size_memory)]
             observations = torch.stack(observations).unsqueeze(0)
-            actions = [torch.from_numpy(env.action_space.sample()).float().to(device) for _ in range(batch_size_memory)]
+            actions = [torch.from_numpy(np.array([0])).float().to(device) for _ in range(batch_size_memory)]
             actions = torch.stack(actions).unsqueeze(0)
             rewards = [torch.from_numpy(np.array([0])).float().to(device) for _ in range(batch_size_memory)]
             rewards = torch.stack(rewards).unsqueeze(0)
@@ -482,7 +482,7 @@ for _ in range(100*max_step):
             timesteps = torch.cat([timesteps[0, 1:], torch.from_numpy(np.array([step+batch_size_memory-1])).long().to(device)]).unsqueeze(0)
             observations = torch.cat([observations[0, 1:], torch.from_numpy(observation).float().to(device).unsqueeze(0)]).unsqueeze(0)
             actions = torch.cat([actions[0, 1:], action_t.to(device).unsqueeze(0)]).unsqueeze(0)
-            rewards = torch.cat([rewards[0, 1:], torch.from_numpy(np.array([0])).float().to(device).unsqueeze(0)]).unsqueeze(0)
+            rewards = torch.cat([rewards[0, 1:], torch.from_numpy(np.array([reward])).float().to(device).unsqueeze(0)]).unsqueeze(0)
             _, action_preds, _ = decision_model(observations, actions, rewards, timesteps)
             action_t = action_preds[0, batch_size_memory-1].detach()
 
@@ -490,8 +490,14 @@ for _ in range(100*max_step):
 
     
 
-    action = env.action_space.sample()
+    # action = env.action_space.sample()
+    # print('action', action)
     next_observation, reward, done, _, _ = env.step(action*2)
+    # print('reward', reward)
+    # print('reward_type', type(reward))
+    # print('reward_shape', reward.shape)
+    # sys,exit('stop')
+
     if observation_type == 'pixel':
         next_observation = cv2.resize(
                 next_observation[0:84, 0:96], (84, 84), interpolation = cv2.INTER_AREA
